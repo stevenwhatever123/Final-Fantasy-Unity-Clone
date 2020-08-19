@@ -1,0 +1,277 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MainCharacterMovement : MonoBehaviour
+{
+
+    #region Variables
+    public Camera camera;
+    Animator animator;
+    CharacterController controller;
+
+    // Moving speed of the character
+    public float speed;
+    // Running speed of the character
+    public float runSpeed;
+    // Temp for storing the speed
+    float speedTemp;
+    // Player's gravity
+    public float gravity = -9.8f;
+    // Multiplier for gravity
+    public float fallMultiplier = 2.5f;
+    // Jump speed of the character
+    public float jumpHeight;
+    // Boolean if the player is grounded
+    public bool isGrounded;
+    // New point to move
+    public Vector3 move = Vector3.zero;
+    // Velocity for falling and jumping
+    Vector3 velocity;
+    // Boolean if the player is walking
+    bool isWalking;
+    // Float to check the distance between the player and the ground
+    public float groundDistance = 0.4f;
+    // Layer for ground
+    public LayerMask groundMask;
+    // Player smoothness for rotation
+    [Range(0.0f, 10.0f)]
+    public float smooth;
+
+
+
+    private Vector3 rightFootPosition, leftFootPosition, rightFootIKPosition, leftFootIKPosition;
+    private Quaternion leftFootIKRotation, rightFootIKRotation;
+    private float lastPelvisPositionY, lastRightFootPositionY, lastLeftFootPositionY;
+
+    [Header("Feet Grounder")]
+    public bool enableFeetIK = true;
+    [Range(0,2)] [SerializeField] private float heightFromGroundRayCast = 1.14f;
+    [Range(0, 2)] [SerializeField] private float raycastDownDistance = 1.5f;
+    [SerializeField] private LayerMask environmentLayer;
+    [SerializeField] private float pelvisOffset = 0f;
+    [Range(0,1)] [SerializeField] private float pelvisUpAndDownSpeed = 0.28f;
+    [Range(0,1)] [SerializeField] private float feetToIKPositionSpeed = 0.5f;
+
+    public string leftFootAnimVariableName = "LeftFootCurve";
+    public string rightFootAnimVariableName = "RightFootCurve";
+
+    public bool useProIKFeature = false;
+    public bool showSolverDebug = true;
+
+    [Header("Weapon")]
+    public GameObject sword;
+
+
+    #endregion
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        controller = this.GetComponent<CharacterController>();
+        animator = this.GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        KeyBoardMovement();
+        checkGrounded();
+        Jump();
+        Falling();
+    }
+
+    #region Player Movement Controller
+
+    // Player movement 
+    void KeyBoardMovement(){
+        float moveY = Input.GetAxis("Horizontal");
+        float moveX = Input.GetAxis("Vertical");
+
+        // If there is any input, we rotate the player facing the camera direction
+        if(moveY != 0 || moveX !=0){
+            Vector3 rotation = new Vector3(0f, camera.transform.eulerAngles.y, 0f);
+            //transform.rotation = Quaternion.Euler(rotation);
+            transform.localRotation = Quaternion.Slerp (transform.rotation, Quaternion.Euler(rotation), Time.deltaTime * smooth);
+            isWalking = true;
+        } else {
+            isWalking = false;
+        }
+
+        // Check if the player is running
+        if(Input.GetKey(KeyCode.LeftShift) && isWalking){
+            speedTemp = runSpeed;
+            animator.SetBool("running", true);
+            animator.SetBool("walking", false);
+        } else {
+            speedTemp = speed;
+            animator.SetBool("walking", isWalking);
+            animator.SetBool("running", false);
+        }
+
+        if(Input.GetKey(KeyCode.J)){
+            animator.SetBool("battle", true);
+        } 
+
+        if(Input.GetKeyUp(KeyCode.J)){
+            animator.SetBool("battle", false);
+            //sword.active = true;
+        }
+
+        // Moving the player
+        move = transform.right * moveY + transform.forward * moveX;
+        controller.Move(move * speedTemp * Time.deltaTime);
+    }
+
+    // Method to check is the player is grounded or not
+    // If so, it will change isGrounded to true and cancel the jumping animation
+    void checkGrounded(){
+        isGrounded = Physics.CheckSphere(controller.transform.position, groundDistance, groundMask);
+        animator.SetBool("isJumping", !isGrounded);
+        if(isGrounded && velocity.y < 0){
+            velocity.y = -2f;
+        }
+    }
+
+    // Method for the player to jump
+    // The player can jump only when grounded
+    void Jump(){ 
+        if(Input.GetButtonDown("Jump") && isGrounded){
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            animator.SetBool("isJumping", true);
+        }
+    }
+
+    // Method for calculating player's falling
+    void Falling(){
+        velocity.y += gravity * fallMultiplier * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    #endregion
+
+    #region FeetGrounding
+
+    private void FixedUpdate(){
+        if(enableFeetIK == false){
+            return;
+        }
+        if(animator == null){
+            return;
+        }
+
+        AdjustFeetTarget(ref rightFootPosition, HumanBodyBones.RightFoot);
+        AdjustFeetTarget(ref leftFootPosition, HumanBodyBones.LeftFoot);
+
+        // find and raycast to the ground to find positions
+        FeetPositionSolver(rightFootPosition, ref rightFootIKPosition, ref rightFootIKRotation); // handle the solver for right foot
+        FeetPositionSolver(leftFootPosition, ref leftFootIKPosition, ref leftFootIKRotation); // handle the solver for left foot
+
+    }
+
+    private void onAnimatorIK(int layerIndex){
+        if(enableFeetIK == false){
+            return;
+        }
+        if(animator == null){
+            return;
+        }
+
+        MovePelvisHeight();
+
+        // Right foot ik position and rotation
+        animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1);
+
+        if(useProIKFeature){
+            animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, animator.GetFloat(rightFootAnimVariableName));
+        }
+
+        MoveFeetToIKPoint(AvatarIKGoal.RightFoot, rightFootIKPosition, rightFootIKRotation, ref lastRightFootPositionY);
+
+        // Left foot ik position and rotation
+        animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
+
+        if(useProIKFeature){
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, animator.GetFloat(leftFootAnimVariableName));
+        }
+
+        MoveFeetToIKPoint(AvatarIKGoal.LeftFoot, leftFootIKPosition, leftFootIKRotation, ref lastLeftFootPositionY);
+    }
+
+
+
+
+
+    #endregion
+
+    #region FeetGroundingMethods
+
+    void MoveFeetToIKPoint(AvatarIKGoal foot, Vector3 positionIKHolder, Quaternion rotationIKHolder, ref float lastFootPositionY){
+        Vector3 targetIKPosition = animator.GetIKPosition(foot);
+
+        if(positionIKHolder != Vector3.zero){
+            targetIKPosition = transform.InverseTransformPoint(targetIKPosition);
+            positionIKHolder = transform.InverseTransformPoint(positionIKHolder);
+
+            float yVariable = Mathf.Lerp(lastFootPositionY, positionIKHolder.y, feetToIKPositionSpeed);
+            targetIKPosition.y += yVariable;
+
+            lastFootPositionY = yVariable;
+
+            targetIKPosition = transform.TransformPoint(targetIKPosition);
+
+            animator.SetIKRotation(foot, rotationIKHolder);
+        }
+
+        animator.SetIKPosition(foot, targetIKPosition);
+    }
+
+    private void MovePelvisHeight(){
+        if(rightFootIKPosition == Vector3.zero || leftFootIKPosition == Vector3.zero || lastPelvisPositionY == 0){
+            lastPelvisPositionY = animator.bodyPosition.y;
+            return;
+        }
+
+        float leftOffsetPosition = leftFootIKPosition.y - transform.position.y;
+        float rightOffsetPosition = rightFootIKPosition.y - transform.position.y;
+
+        float totalOffset = (leftOffsetPosition < rightOffsetPosition) ? leftOffsetPosition : rightOffsetPosition;
+
+        Vector3 newPelvisPosition = animator.bodyPosition + Vector3.up * totalOffset;
+
+        newPelvisPosition.y = Mathf.Lerp(lastPelvisPositionY, newPelvisPosition.y, pelvisUpAndDownSpeed);
+
+        animator.bodyPosition = newPelvisPosition;
+
+        lastPelvisPositionY = animator.bodyPosition.y;
+    }
+
+    private void FeetPositionSolver(Vector3 fromSkyPosition, ref Vector3 feetIKPosition, ref Quaternion feetIKRotations){
+        //Raycast handling section
+        RaycastHit feetOutHit;
+
+        if(showSolverDebug){
+            Debug.DrawLine(fromSkyPosition, fromSkyPosition + Vector3.down * (raycastDownDistance + heightFromGroundRayCast), Color.yellow);
+        }
+
+        if(Physics.Raycast(fromSkyPosition, Vector3.down, out feetOutHit, raycastDownDistance + heightFromGroundRayCast, environmentLayer)){
+            feetIKPosition = fromSkyPosition;
+            feetIKPosition.y = feetOutHit.point.y + pelvisOffset;
+            feetIKRotations = Quaternion.FromToRotation(Vector3.up, feetOutHit.normal) * transform.rotation;
+            return;
+        }
+
+        feetIKPosition = Vector3.zero;
+    }
+
+    private void AdjustFeetTarget(ref Vector3 feetPositions, HumanBodyBones foot){
+        // This just dont work
+        // Dont know why, figure it out later
+        //feetPositions = animator.GetBoneTransform(foot).position;
+        //feetPositions.y = transform.position.y + heightFromGroundRayCast;
+    }
+
+    #endregion
+
+
+}
