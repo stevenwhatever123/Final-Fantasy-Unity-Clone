@@ -39,6 +39,11 @@ public class MainCharacterMovement : MonoBehaviour
     public float smooth;
 
 
+    [Header("Battle Mode")]
+    public bool inBattle;
+    public float battleWalkSpeed = 2f;
+
+
 
     private Vector3 rightFootPosition, leftFootPosition, rightFootIKPosition, leftFootIKPosition;
     private Quaternion leftFootIKRotation, rightFootIKRotation;
@@ -60,7 +65,8 @@ public class MainCharacterMovement : MonoBehaviour
     public bool showSolverDebug = true;
 
     [Header("Weapon")]
-    public GameObject sword;
+    public GameObject swordOnBack;
+    public GameObject swordOnHand;
 
 
     #endregion
@@ -99,23 +105,32 @@ public class MainCharacterMovement : MonoBehaviour
         }
 
         // Check if the player is running
-        if(Input.GetKey(KeyCode.LeftShift) && isWalking){
+        if(Input.GetKey(KeyCode.LeftShift) && isWalking && !inBattle){
             speedTemp = runSpeed;
             animator.SetBool("running", true);
             animator.SetBool("walking", false);
+        } else if(inBattle){
+            speedTemp = battleWalkSpeed;
         } else {
             speedTemp = speed;
             animator.SetBool("walking", isWalking);
             animator.SetBool("running", false);
         }
 
-        if(Input.GetKey(KeyCode.J)){
-            animator.SetBool("battle", true);
+        if(Input.GetKey(KeyCode.G)){
+            inBattle = true;
+            animator.SetBool("battle", inBattle);
+            if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1){
+                swordOnBack.SetActive(false);
+                swordOnHand.SetActive(true);
+            }
         } 
 
-        if(Input.GetKeyUp(KeyCode.J)){
-            animator.SetBool("battle", false);
-            //sword.active = true;
+        if(Input.GetKey(KeyCode.H)){
+            inBattle = false;
+            animator.SetBool("battle", inBattle);
+            swordOnBack.SetActive(true);
+            swordOnHand.SetActive(false);
         }
 
         // Moving the player
@@ -272,6 +287,8 @@ public class MainCharacterMovement : MonoBehaviour
     }
 
     #endregion
+
+
 
 
 }
