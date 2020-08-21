@@ -9,7 +9,9 @@ public class MainCharacterMovement : MonoBehaviour
     public Camera camera;
     Animator animator;
     CharacterController controller;
+    public GameControllerScript gameController;
 
+    public bool allowWalk = true;
     // Moving speed of the character
     public float speed;
     // Running speed of the character
@@ -30,6 +32,8 @@ public class MainCharacterMovement : MonoBehaviour
     Vector3 velocity;
     // Boolean if the player is walking
     bool isWalking;
+    // Boolean if the player is running
+    bool isRunning;
     // Float to check the distance between the player and the ground
     public float groundDistance = 0.4f;
     // Layer for ground
@@ -41,6 +45,7 @@ public class MainCharacterMovement : MonoBehaviour
 
     [Header("Battle Mode")]
     public bool inBattle;
+    public bool battleCheck = false;
     public float battleWalkSpeed = 2f;
 
 
@@ -85,6 +90,8 @@ public class MainCharacterMovement : MonoBehaviour
         checkGrounded();
         Jump();
         Falling();
+        switchBetweenNormalAndBattle();
+        
     }
 
     #region Player Movement Controller
@@ -107,35 +114,59 @@ public class MainCharacterMovement : MonoBehaviour
         // Check if the player is running
         if(Input.GetKey(KeyCode.LeftShift) && isWalking && !inBattle){
             speedTemp = runSpeed;
-            animator.SetBool("running", true);
-            animator.SetBool("walking", false);
+            isRunning = true;
+            isWalking = false;
+            animator.SetBool("running", isRunning);
+            animator.SetBool("walking", isWalking);
         } else if(inBattle){
             speedTemp = battleWalkSpeed;
+            animator.SetBool("walking", isWalking);
         } else {
             speedTemp = speed;
+            isRunning = false;
             animator.SetBool("walking", isWalking);
-            animator.SetBool("running", false);
+            animator.SetBool("running", isRunning);
+        }
+        
+        if(allowWalk){
+            // Moving the player
+            move = transform.right * moveY + transform.forward * moveX;
+            controller.Move(move * speedTemp * Time.deltaTime);
         }
 
-        if(Input.GetKey(KeyCode.G)){
-            inBattle = true;
-            animator.SetBool("battle", inBattle);
-            if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1){
-                swordOnBack.SetActive(false);
-                swordOnHand.SetActive(true);
+    }
+    void switchBetweenNormalAndBattle(){
+        inBattle = gameController.getInBattle();   
+        animator.SetBool("battle", inBattle);
+        if(inBattle){
+            if(battleCheck == true){
+                allowWalk = true;
+            } else {
+                allowWalk = false;
+                isWalking = false;
+                isRunning = false;
             }
-        } 
-
-        if(Input.GetKey(KeyCode.H)){
-            inBattle = false;
-            animator.SetBool("battle", inBattle);
+            animator.SetBool("walking", isWalking);
+            animator.SetBool("running", isRunning);
+            if(battleCheck == false){
+                if(animator.GetCurrentAnimatorStateInfo(0).IsTag("Draw Sword")){
+                    if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1){
+                        swordOnBack.SetActive(false);
+                        swordOnHand.SetActive(true);
+                    }
+                }else if(animator.GetCurrentAnimatorStateInfo(0).IsTag("Great Sword Idle")){
+                    battleCheck = true;
+                    allowWalk = true;
+                    isWalking = true;
+                    animator.SetBool("walking", isWalking);
+                }
+            }
+        }else {
+            battleCheck = false;
+            allowWalk = true;
             swordOnBack.SetActive(true);
             swordOnHand.SetActive(false);
         }
-
-        // Moving the player
-        move = transform.right * moveY + transform.forward * moveX;
-        controller.Move(move * speedTemp * Time.deltaTime);
     }
 
     // Method to check is the player is grounded or not

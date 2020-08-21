@@ -2237,7 +2237,7 @@ GameObject:
   - component: {fileID: 38311877910200900}
   m_Layer: 0
   m_Name: Character
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2323,6 +2323,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   camera: {fileID: 0}
+  gameController: {fileID: 7544553737803965651, guid: e4f4bb8e6f1ff6344a82a21d03c3c785,
+    type: 3}
+  allowWalk: 1
   speed: 4
   runSpeed: 7
   gravity: -9.81
@@ -2336,6 +2339,7 @@ MonoBehaviour:
     m_Bits: 256
   smooth: 5
   inBattle: 0
+  battleCheck: 0
   battleWalkSpeed: 3
   enableFeetIK: 1
   heightFromGroundRayCast: 1.14
