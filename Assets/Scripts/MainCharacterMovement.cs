@@ -218,6 +218,24 @@ public class MainCharacterMovement : MonoBehaviour
         }
     }
 
+    public void setInBattle(bool b){
+        this.inBattle = b;
+        animator.SetBool("battle", this.inBattle);
+    }
+
+    public bool getInBattle(){
+        return this.inBattle;
+    }
+
+    public void setBattleCheck(bool b){
+        this.battleCheck = b;
+        animator.SetBool("battleCheck", this.battleCheck);
+    }
+
+    public bool getBattleCheck(){
+        return this.battleCheck;
+    }
+
     #endregion
 
     #region FeetGrounding

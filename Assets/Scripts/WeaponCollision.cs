@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WeaponCollision : MonoBehaviour
 {
-
+    public GameControllerScript gameController;
     public int damage = 20;
 
     void OnTriggerEnter(Collider collision){
@@ -14,9 +14,13 @@ public class WeaponCollision : MonoBehaviour
             enemyData.damaged(damage);
             print("Health: " + enemyData.getHealth());
             if(enemyData.getHealth() == 0){
+                MainCharacterMovement character = this.transform.root.GetComponent<MainCharacterMovement>();
                 Destroy(enemy);
+                gameController.setInBattle(false);
+                character.setInBattle(false);
             }
         }
+
     }
 
 }
