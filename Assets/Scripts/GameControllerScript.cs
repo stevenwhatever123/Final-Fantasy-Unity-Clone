@@ -13,5 +13,5 @@ public class GameControllerScript : MonoBehaviour
     public void setInBattle(bool b){
         this.inBattle = b;
     }
-
+    
 }

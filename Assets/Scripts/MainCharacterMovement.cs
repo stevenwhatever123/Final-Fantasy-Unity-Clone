@@ -47,6 +47,7 @@ public class MainCharacterMovement : MonoBehaviour
     public bool inBattle;
     public bool battleCheck = false;
     public float battleWalkSpeed = 2f;
+    public int attackCounter = 0;
 
 
 
@@ -91,7 +92,7 @@ public class MainCharacterMovement : MonoBehaviour
         Jump();
         Falling();
         switchBetweenNormalAndBattle();
-        
+        BattlePhase();
     }
 
     #region Player Movement Controller
@@ -156,6 +157,7 @@ public class MainCharacterMovement : MonoBehaviour
                     }
                 }else if(animator.GetCurrentAnimatorStateInfo(0).IsTag("Great Sword Idle")){
                     battleCheck = true;
+                    animator.SetBool("battleCheck", battleCheck);
                     allowWalk = true;
                     isWalking = true;
                     animator.SetBool("walking", isWalking);
@@ -163,6 +165,7 @@ public class MainCharacterMovement : MonoBehaviour
             }
         }else {
             battleCheck = false;
+            animator.SetBool("battleCheck", battleCheck);
             allowWalk = true;
             swordOnBack.SetActive(true);
             swordOnHand.SetActive(false);
@@ -192,6 +195,27 @@ public class MainCharacterMovement : MonoBehaviour
     void Falling(){
         velocity.y += gravity * fallMultiplier * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    void BattlePhase(){
+        if(inBattle && battleCheck){
+            if(Input.GetMouseButtonDown(0)){
+                attackCounter ++;
+                animator.SetInteger("attackCounter", attackCounter);
+            }
+
+            if(animator.GetCurrentAnimatorStateInfo(0).IsTag("Great Sword Slash 1")){
+                if(animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1){
+                    if(attackCounter == 1){
+                        attackCounter = 0;
+                    }
+                    animator.SetInteger("attackCounter", attackCounter);
+                }
+            } else if(animator.GetCurrentAnimatorStateInfo(0).IsTag("Great Sword Slash 2")){
+                attackCounter = 0;
+                animator.SetInteger("attackCounter", attackCounter);
+            }
+        }
     }
 
     #endregion
