@@ -15,7 +15,8 @@ public class WeaponCollision : MonoBehaviour
             print("Health: " + enemyData.getHealth());
             if(enemyData.getHealth() == 0){
                 MainCharacterMovement character = this.transform.root.GetComponent<MainCharacterMovement>();
-                Destroy(enemy);
+                enemyData.getCharacterController().enabled = false;
+                //Destroy(enemy);
                 gameController.setInBattle(false);
                 character.setInBattle(false);
             }
