@@ -91,6 +91,7 @@
      <Compile Include="Assets\NatureStarterKit2\Standard Assets\Effects\ImageEffects\Scripts\Twirl.cs" />
      <Compile Include="Assets\NatureStarterKit2\Standard Assets\Effects\ImageEffects\Scripts\VignetteAndChromaticAberration.cs" />
      <Compile Include="Assets\NatureStarterKit2\Standard Assets\Effects\ImageEffects\Scripts\Vortex.cs" />
+     <Compile Include="Assets\Scripts\AnimationTriggerScript.cs" />
      <Compile Include="Assets\Scripts\BattleDetector.cs" />
      <Compile Include="Assets\Scripts\CharacterIdleAnimationController.cs" />
      <Compile Include="Assets\Scripts\EnemyScript.cs" />

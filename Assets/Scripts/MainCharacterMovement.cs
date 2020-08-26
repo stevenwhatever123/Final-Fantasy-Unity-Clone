@@ -6,6 +6,7 @@ public class MainCharacterMovement : MonoBehaviour
 {
 
     #region Variables
+    public Transform enemy;
     public Camera camera;
     Animator animator;
     CharacterController controller;
@@ -41,6 +42,8 @@ public class MainCharacterMovement : MonoBehaviour
     // Player smoothness for rotation
     [Range(0.0f, 10.0f)]
     public float smooth;
+    public bool allowInput;
+    public bool jumping;
 
 
     [Header("Battle Mode")]
@@ -80,6 +83,7 @@ public class MainCharacterMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        allowInput = gameController.getAllowInput();
         controller = this.GetComponent<CharacterController>();
         animator = this.GetComponent<Animator>();
     }
@@ -87,12 +91,18 @@ public class MainCharacterMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        KeyBoardMovement();
+        updateWithGameController();
+        if(allowInput){
+            KeyBoardMovement();
+            Jump();
+        } else {
+            animationHandler();
+        }
         checkGrounded();
-        Jump();
         Falling();
         switchBetweenNormalAndBattle();
         BattlePhase();
+        transform.LookAt(enemy);
     }
 
     #region Player Movement Controller
@@ -117,17 +127,20 @@ public class MainCharacterMovement : MonoBehaviour
             speedTemp = runSpeed;
             isRunning = true;
             isWalking = false;
-            animator.SetBool("running", isRunning);
-            animator.SetBool("walking", isWalking);
+            //animator.SetBool("running", isRunning);
+            //animator.SetBool("walking", isWalking);
         } else if(inBattle){
             speedTemp = battleWalkSpeed;
-            animator.SetBool("walking", isWalking);
+            //animator.SetBool("walking", isWalking);
         } else {
             speedTemp = speed;
             isRunning = false;
-            animator.SetBool("walking", isWalking);
-            animator.SetBool("running", isRunning);
+            //animator.SetBool("walking", isWalking);
+            //animator.SetBool("running", isRunning);
         }
+
+        animator.SetBool("running", isRunning);
+        animator.SetBool("walking", isWalking);
         
         if(allowWalk){
             // Moving the player
@@ -166,7 +179,7 @@ public class MainCharacterMovement : MonoBehaviour
         }else {
             battleCheck = false;
             animator.SetBool("battleCheck", battleCheck);
-            allowWalk = true;
+            //allowWalk = true;
             swordOnBack.SetActive(true);
             swordOnHand.SetActive(false);
         }
@@ -187,6 +200,7 @@ public class MainCharacterMovement : MonoBehaviour
     void Jump(){ 
         if(Input.GetButtonDown("Jump") && isGrounded){
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            jumping = true;
             animator.SetBool("isJumping", true);
         }
     }
@@ -218,6 +232,16 @@ public class MainCharacterMovement : MonoBehaviour
         }
     }
 
+    public void animationHandler(){
+        animator.SetBool("running", isRunning);
+        animator.SetBool("walking", isWalking);    
+    }
+
+    public void updateWithGameController(){
+        this.inBattle = gameController.getInBattle();
+        this.allowInput = gameController.getAllowInput();
+    }
+
     public void setInBattle(bool b){
         this.inBattle = b;
         animator.SetBool("battle", this.inBattle);
@@ -234,6 +258,22 @@ public class MainCharacterMovement : MonoBehaviour
 
     public bool getBattleCheck(){
         return this.battleCheck;
+    }
+
+    public void setIsWalking(bool b){
+        this.isWalking = b;
+    }
+
+    public bool getIsWalking(){
+        return this.isWalking;
+    }
+
+    public void setIsRunning(bool b){
+        this.isRunning = b;
+    }
+
+    public bool getIsRunning(){
+        return this.isRunning;
     }
 
     #endregion
