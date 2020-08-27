@@ -5,6 +5,7 @@ using UnityEngine;
 public class AnimationTriggerScript : MonoBehaviour
 {
     public GameControllerScript GameController;
+    public MusicControllerScript musicController;
     public MainCharacterMovement characterMovement;
     public GameObject AnimationEvent;
     
@@ -17,17 +18,18 @@ public class AnimationTriggerScript : MonoBehaviour
 
     void OnTriggerEnter(Collider other){
         if(other.tag == "Player"){
+            musicController.setInClimax(true);
             AnimationEvent.SetActive(true);
             characterMovement.allowWalk = false;
             GameController.setAllowInput(false);
             characterMovement.setIsRunning(false);
             characterMovement.setIsWalking(false);
-             StartCoroutine(timeDelay());
+            StartCoroutine(timeDelay());
         }
     }
 
     IEnumerator timeDelay(){
-        yield return new WaitForSeconds(9);
+        yield return new WaitForSeconds(15);
         characterMovement.allowWalk = true;
         GameController.setAllowInput(true);
         Destroy(AnimationEvent);

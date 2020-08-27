@@ -5,6 +5,7 @@ using UnityEngine;
 public class WeaponCollision : MonoBehaviour
 {
     public GameControllerScript gameController;
+    public MusicControllerScript musicController;
     public int damage = 20;
 
     void OnTriggerEnter(Collider collision){
@@ -15,8 +16,9 @@ public class WeaponCollision : MonoBehaviour
             print("Health: " + enemyData.getHealth());
             if(enemyData.getHealth() == 0){
                 MainCharacterMovement character = this.transform.root.GetComponent<MainCharacterMovement>();
-                enemyData.getCharacterController().enabled = false;
                 //Destroy(enemy);
+                musicController.setInClimax(false);
+                musicController.playVictoryClip();
                 gameController.setInBattle(false);
                 character.setInBattle(false);
             }

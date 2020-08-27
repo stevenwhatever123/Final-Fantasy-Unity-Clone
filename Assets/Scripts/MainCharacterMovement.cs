@@ -6,7 +6,6 @@ public class MainCharacterMovement : MonoBehaviour
 {
 
     #region Variables
-    public Transform enemy;
     public Camera camera;
     Animator animator;
     CharacterController controller;
@@ -102,7 +101,6 @@ public class MainCharacterMovement : MonoBehaviour
         Falling();
         switchBetweenNormalAndBattle();
         BattlePhase();
-        transform.LookAt(enemy);
     }
 
     #region Player Movement Controller
@@ -111,6 +109,9 @@ public class MainCharacterMovement : MonoBehaviour
     void KeyBoardMovement(){
         float moveY = Input.GetAxis("Horizontal");
         float moveX = Input.GetAxis("Vertical");
+
+        animator.SetFloat("moveX", moveX);
+        animator.SetFloat("moveY", moveY);
 
         // If there is any input, we rotate the player facing the camera direction
         if(moveY != 0 || moveX !=0){
@@ -155,6 +156,7 @@ public class MainCharacterMovement : MonoBehaviour
         if(inBattle){
             if(battleCheck == true){
                 allowWalk = true;
+                transform.LookAt(gameController.getEnemy().transform);
             } else {
                 allowWalk = false;
                 isWalking = false;

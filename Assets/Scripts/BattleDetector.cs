@@ -10,12 +10,16 @@ public class BattleDetector : MonoBehaviour
     void OnTriggerEnter(Collider other){
         if(other.tag == "Player"){
             gameController.setInBattle(true);
+            gameController.setEnemy(gameObject.transform.root.gameObject);
         }
     }
 
     void OnTriggerExit(Collider other){
         if(other.tag == "Player"){
-            gameController.setInBattle(false);
+            gameController.setInBattle(false);  
+            gameController.setEnemy(null);
         }
     }
+
+
 }
