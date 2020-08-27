@@ -18,7 +18,7 @@ public class AnimationTriggerScript : MonoBehaviour
 
     void OnTriggerEnter(Collider other){
         if(other.tag == "Player"){
-            musicController.setInClimax(true);
+            Cursor.lockState = CursorLockMode.Locked;
             AnimationEvent.SetActive(true);
             characterMovement.allowWalk = false;
             GameController.setAllowInput(false);
@@ -30,6 +30,7 @@ public class AnimationTriggerScript : MonoBehaviour
 
     IEnumerator timeDelay(){
         yield return new WaitForSeconds(15);
+        Cursor.lockState = CursorLockMode.None;
         characterMovement.allowWalk = true;
         GameController.setAllowInput(true);
         Destroy(AnimationEvent);

@@ -12,8 +12,6 @@ public class MusicControllerScript : MonoBehaviour
 
     [Header("Audio Clip")]
     public AudioClip normalClip;
-    public AudioClip climaxClip;
-    public float climaxClipStartTime;
     public AudioClip battleClip;
     public AudioClip victoryClip;
     float playBackTime;
@@ -34,7 +32,6 @@ public class MusicControllerScript : MonoBehaviour
 
     void Update(){
         updateWithGameController();
-        switchToClimax();
         switchBattleMusic();
     }
 
@@ -50,27 +47,10 @@ public class MusicControllerScript : MonoBehaviour
             audio.time = 0f;
             audio.Play();
         } else if(!inBattle && musicChanged){
-            if(inClimax){
-                audio.clip = climaxClip;
-                audio.time = climaxClipStartTime;
-            } else {
-                audio.clip = normalClip;
-                audio.time = playBackTime;
-            }
+            audio.clip = normalClip;
+            audio.time = playBackTime;
             musicChanged = false;
             audio.Play();
-        }
-    }
-
-    void switchToClimax(){
-        if(inClimax && !inBattle && !climaxClipMusicChanged){
-            playBackTime = audio.time;
-            climaxClipMusicChanged = true;
-            audio.clip = climaxClip;
-            audio.time = climaxClipStartTime;
-            audio.Play();
-        } else if(!inClimax){
-            climaxClipMusicChanged = false;
         }
     }
 

@@ -8,6 +8,10 @@ public class GameControllerScript : MonoBehaviour
     public bool allowInput = true;
     public GameObject enemy;
 
+    void Start(){
+        Cursor.visible = false;
+    }
+
     public bool getInBattle(){
         return this.inBattle;
     }
