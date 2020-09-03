@@ -29,7 +29,7 @@ public class AnimationTriggerScript : MonoBehaviour
     }
 
     IEnumerator timeDelay(){
-        yield return new WaitForSeconds(15);
+        yield return new WaitForSeconds(10.5f);
         Cursor.lockState = CursorLockMode.None;
         characterMovement.allowWalk = true;
         GameController.setAllowInput(true);
