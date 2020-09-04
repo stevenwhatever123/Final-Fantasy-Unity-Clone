@@ -96,6 +96,7 @@
      <Compile Include="Assets\Scripts\CharacterCameraScript.cs" />
      <Compile Include="Assets\Scripts\CharacterIdleAnimationController.cs" />
      <Compile Include="Assets\Scripts\EnemyScript.cs" />
+     <Compile Include="Assets\Scripts\EnterBossFightAnimationScript.cs" />
      <Compile Include="Assets\Scripts\GameControllerScript.cs" />
      <Compile Include="Assets\Scripts\MainCharacterMovement.cs" />
      <Compile Include="Assets\Scripts\MusicControllerScript.cs" />

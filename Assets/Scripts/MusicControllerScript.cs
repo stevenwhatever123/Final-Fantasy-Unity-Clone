@@ -12,8 +12,11 @@ public class MusicControllerScript : MonoBehaviour
 
     [Header("Audio Clip")]
     public AudioClip normalClip;
+    public float normalClipStartingTime;
     public AudioClip battleClip;
+    public float battleClipStartingTime;
     public AudioClip victoryClip;
+    public float victoryClipStartingTime;
     float playBackTime;
     
     [Header("Game Variables")]
@@ -27,6 +30,7 @@ public class MusicControllerScript : MonoBehaviour
     void Start()
     {
         audio.clip = normalClip;
+        audio.time = normalClipStartingTime;
         audio.Play();
     }
 
@@ -44,7 +48,7 @@ public class MusicControllerScript : MonoBehaviour
             playBackTime = audio.time;
             musicChanged = true;
             audio.clip = battleClip;
-            audio.time = 0f;
+            audio.time = battleClipStartingTime;
             audio.Play();
         } else if(!inBattle && musicChanged){
             audio.clip = normalClip;
@@ -56,7 +60,7 @@ public class MusicControllerScript : MonoBehaviour
 
     public void playVictoryClip(){
         victoryAudio.clip = victoryClip;
-        victoryAudio.time = 0f;
+        victoryAudio.time = victoryClipStartingTime;
         victoryAudio.Play();
         StartCoroutine(WaitTime());
     }

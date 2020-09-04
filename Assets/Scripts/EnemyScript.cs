@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EnemyScript : MonoBehaviour
 {
+    int maxHealth;
     public int health = 100;
     public bool hit = false;
     public int hitCount = 0;
@@ -12,6 +13,7 @@ public class EnemyScript : MonoBehaviour
     CharacterController characterController;
     
     void Start(){
+        maxHealth = health;
         animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
     }
@@ -38,6 +40,10 @@ public class EnemyScript : MonoBehaviour
         }
         hit = true;
         animator.SetBool("hit", hit);
+    }
+
+    public int getMaxHealth(){
+        return this.maxHealth;
     }
 
     public int getHealth(){
